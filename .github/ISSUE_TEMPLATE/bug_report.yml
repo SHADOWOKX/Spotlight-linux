@@ -1,0 +1,57 @@
+name: Bug report
+description: Report a reproducible Spotlight Linux problem
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. For security-sensitive issues, follow SECURITY.md instead of posting exploit details publicly.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Release version or commit SHA.
+      placeholder: 0.1.1-preview.1
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Distribution, desktop, session type, and architecture.
+      placeholder: Ubuntu 26.04, GNOME 50, Wayland, x86_64
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Describe the actual behavior and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction steps
+      placeholder: |
+        1. Open Spotlight Linux
+        2. ...
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or diagnostics
+      description: Paste relevant output. Remove secrets and personal data first.
+      render: shell
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I tested the latest available preview or main branch when practical.
+          required: true
+        - label: This is not a security vulnerability that should be reported privately.
+          required: true

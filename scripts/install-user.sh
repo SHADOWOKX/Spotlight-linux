@@ -3,7 +3,8 @@ set -eu
 
 project_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 data_root=${XDG_DATA_HOME:-"$HOME/.local/share"}
-cargo build --manifest-path "$project_root/Cargo.toml" --target-dir "$project_root/target" --locked --release -p spotlight-gtk
+case "$data_root" in /*) ;; *) data_root="$HOME/.local/share" ;; esac
+python3 "$project_root/scripts/build-release.py"
 
 "$project_root/target/release/spotlight-linux" --install-user
 

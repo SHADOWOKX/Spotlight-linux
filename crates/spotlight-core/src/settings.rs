@@ -473,7 +473,8 @@ impl XdgPaths {
     pub fn from_process() -> Result<Self, XdgPathError> {
         let home = env::var_os("HOME")
             .filter(|value| !value.is_empty())
-            .map(PathBuf::from);
+            .map(PathBuf::from)
+            .filter(|path| path.is_absolute());
         let config_home = xdg_home("XDG_CONFIG_HOME", home.as_ref(), ".config")?;
         let cache_home = xdg_home("XDG_CACHE_HOME", home.as_ref(), ".cache")?;
         let data_home = xdg_home("XDG_DATA_HOME", home.as_ref(), ".local/share")?;
@@ -501,9 +502,17 @@ fn xdg_home(
     home: Option<&PathBuf>,
     fallback: &str,
 ) -> Result<PathBuf, XdgPathError> {
-    env::var_os(variable)
-        .filter(|value| !value.is_empty())
+    resolve_xdg_home(env::var_os(variable), home, fallback)
+}
+
+fn resolve_xdg_home(
+    value: Option<std::ffi::OsString>,
+    home: Option<&PathBuf>,
+    fallback: &str,
+) -> Result<PathBuf, XdgPathError> {
+    value
         .map(PathBuf::from)
+        .filter(|path| path.is_absolute())
         .or_else(|| home.map(|home| home.join(fallback)))
         .ok_or(XdgPathError::MissingHome)
 }
@@ -543,6 +552,22 @@ mod tests {
     use tempfile::tempdir;
 
     use super::*;
+
+    #[test]
+    fn relative_xdg_roots_use_the_home_fallback() {
+        let home = PathBuf::from("/example/user");
+        for value in ["", "relative/data"] {
+            assert_eq!(
+                resolve_xdg_home(Some(value.into()), Some(&home), ".local/share").unwrap(),
+                home.join(".local/share")
+            );
+        }
+        assert_eq!(
+            resolve_xdg_home(Some("/absolute/data".into()), Some(&home), ".local/share").unwrap(),
+            PathBuf::from("/absolute/data")
+        );
+        assert!(resolve_xdg_home(Some("relative".into()), None, ".local/share").is_err());
+    }
 
     #[test]
     fn missing_file_loads_safe_defaults() {

@@ -10,6 +10,7 @@ repository.workspace = true
 [dependencies]
 async-channel.workspace = true
 rusqlite.workspace = true
+rustix = { workspace = true, features = ["fs"] }
 serde.workspace = true
 thiserror.workspace = true
 toml.workspace = true

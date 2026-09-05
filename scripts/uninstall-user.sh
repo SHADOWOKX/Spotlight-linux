@@ -3,6 +3,7 @@ set -eu
 
 binary_root=${XDG_BIN_HOME:-"$HOME/.local/bin"}
 data_root=${XDG_DATA_HOME:-"$HOME/.local/share"}
+case "$data_root" in /*) ;; *) data_root="$HOME/.local/share" ;; esac
 if [ ! -x "$binary_root/spotlight-linux" ]; then
     printf '%s\n' "Spotlight Linux is not installed at $binary_root/spotlight-linux" >&2
     exit 1

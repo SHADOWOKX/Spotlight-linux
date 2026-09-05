@@ -1,0 +1,44 @@
+name: Build and preview package
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    container: ubuntu:26.04
+    timeout-minutes: 30
+    steps:
+      - name: Install native test dependencies
+        run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y git ca-certificates build-essential cargo rustc rustfmt rust-clippy libgtk-4-dev libadwaita-1-dev pkg-config python3 dbus-x11 xvfb xauth gjs desktop-file-utils appstream
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - run: python3 scripts/check-requirements.py
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - name: Isolated tests
+        env:
+          GTK_A11Y: none
+          GSK_RENDERER: cairo
+        run: dbus-run-session --config-file=tests/session-bus.conf -- xvfb-run -a cargo test --workspace --locked
+      - run: gjs -m tests/gnome-integration.js
+      - run: python3 tests/history-privacy.py
+      - run: desktop-file-validate data/io.github.shadowokx.SpotlightLinux.desktop
+      - run: appstreamcli validate --no-net data/io.github.shadowokx.SpotlightLinux.metainfo.xml
+      - run: python3 scripts/package-release.py
+      - name: Binary install, lifecycle and uninstall
+        env:
+          GTK_A11Y: none
+          GSK_RENDERER: cairo
+          GSETTINGS_SCHEMA_DIR: /usr/share/glib-2.0/schemas
+        run: dbus-run-session --config-file=tests/session-bus.conf -- xvfb-run -a python3 tests/release-smoke.py
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: spotlight-linux-preview
+          path: dist/*
+          if-no-files-found: error

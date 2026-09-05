@@ -1154,11 +1154,35 @@ impl Launcher {
         }
     }
 
-    pub(crate) fn clear_history(&self) {
-        if let Some(backend) = self.state.borrow().backend.as_ref() {
-            backend.clear_history();
-        }
-        self.show_toast("Usage history cleared");
+    pub(crate) fn clear_history(self: &Rc<Self>) {
+        let Some(reply) = self
+            .state
+            .borrow()
+            .backend
+            .as_ref()
+            .map(Backend::clear_history)
+        else {
+            self.show_toast("History is not ready yet; try again shortly");
+            return;
+        };
+        let weak = Rc::downgrade(self);
+        glib::MainContext::default().spawn_local(async move {
+            let result = reply.recv().await;
+            if let Some(launcher) = weak.upgrade() {
+                match result {
+                    Ok(Ok(())) => {
+                        launcher.show_toast("Usage history cleared");
+                        launcher.submit(launcher.entry.text().as_str());
+                    }
+                    Ok(Err(error)) => {
+                        launcher.show_toast(&format!("Could not clear usage history: {error}"))
+                    }
+                    Err(_) => launcher.show_toast(
+                        "History worker stopped before confirming the clear; try again",
+                    ),
+                }
+            }
+        });
     }
 
     pub(crate) fn show_toast(&self, message: &str) {

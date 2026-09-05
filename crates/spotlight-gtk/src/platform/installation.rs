@@ -117,6 +117,8 @@ impl InstallPaths {
 }
 
 pub fn install(paths: &InstallPaths, executable: &Path) -> io::Result<Vec<PathBuf>> {
+    spotlight_core::history::UsageStore::protect_existing(paths.xdg.history_file())
+        .map_err(io::Error::other)?;
     let bytes = fs::read(executable)?;
     let assets = paths.assets(&bytes)?;
     let mut manifest = Manifest::default();

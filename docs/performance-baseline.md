@@ -5,8 +5,8 @@ are not a substitute for end-to-end profiling in a real GNOME session.
 
 ## Host and method
 
-- Intel Core i5-9400F, 6 physical cores, 15 GiB RAM
-- Ubuntu 26.04.1, Linux 7.0.0-30-generic
+- Reference desktop (personal hardware identifiers omitted)
+- Ubuntu 26.04.1, Linux
 - Rust 1.93.1, optimized benchmark profile
 - Criterion warm-up: 3 seconds; 100 samples; 6 searches per sample
 - Synthetic immutable catalog: 2,000 desktop applications
@@ -70,7 +70,7 @@ cargo bench -p spotlight-core --bench application_search -- --baseline before-ui
 
 Percentiles use nearest-rank samples from Criterion's per-iteration times (µs).
 
-## Native renderer comparison on this NVIDIA host
+## Native renderer comparison on the reference host
 
 After the identical installed lifecycle workload (20 show/hide cycles and five
 Settings openings), a five-second `pidstat` sample of the hidden resident found:

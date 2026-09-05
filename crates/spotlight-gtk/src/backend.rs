@@ -45,7 +45,13 @@ impl Backend {
                         Err(error) => (None, UsageSnapshot::default(), Some(error.to_string())),
                     }
                 } else {
-                    (None, UsageSnapshot::default(), None)
+                    (
+                        None,
+                        UsageSnapshot::default(),
+                        UsageStore::protect_existing(&history_path)
+                            .err()
+                            .map(|error| error.to_string()),
+                    )
                 };
 
                 let applications = Arc::new(ApplicationProvider::new(
@@ -98,8 +104,8 @@ impl Backend {
         }
     }
 
-    pub fn clear_history(&self) {
-        self.history.clear();
+    pub fn clear_history(&self) -> Receiver<Result<(), String>> {
+        self.history.clear()
     }
 
     pub fn set_history_enabled(&self, enabled: bool) {
@@ -127,7 +133,7 @@ impl Backend {
 
 enum HistoryCommand {
     Record(String),
-    Clear,
+    Clear(Sender<Result<(), String>>),
     Enabled(bool),
 }
 
@@ -160,6 +166,10 @@ impl HistoryService {
                     if matches!(command, HistoryCommand::Record(_)) && !enabled {
                         continue;
                     }
+                    let reply = match &command {
+                        HistoryCommand::Clear(reply) => Some(reply.clone()),
+                        _ => None,
+                    };
                     let operation = (|| {
                         if store.is_none() {
                             store = Some(UsageStore::open(&path)?);
@@ -169,15 +179,23 @@ impl HistoryService {
                             HistoryCommand::Record(result_id) => {
                                 store.record_launch(&result_id)?;
                             }
-                            HistoryCommand::Clear => store.clear()?,
+                            HistoryCommand::Clear(_) => store.clear()?,
                             HistoryCommand::Enabled(_) => (),
                         }
                         store.snapshot()
                     })();
                     match operation {
-                        Ok(snapshot) => applications.replace_usage(snapshot),
+                        Ok(snapshot) => {
+                            applications.replace_usage(snapshot);
+                            if let Some(reply) = reply {
+                                let _ = reply.try_send(Ok(()));
+                            }
+                        }
                         Err(error) => {
-                            tracing::warn!(error = %error, "usage history operation failed")
+                            tracing::warn!(error = %error, "usage history operation failed");
+                            if let Some(reply) = reply {
+                                let _ = reply.try_send(Err(error.to_string()));
+                            }
                         }
                     }
                     if !enabled {
@@ -198,8 +216,18 @@ impl HistoryService {
             .try_send(HistoryCommand::Record(result_id.to_owned()));
     }
 
-    fn clear(&self) {
-        let _ = self.commands.try_send(HistoryCommand::Clear);
+    fn clear(&self) -> Receiver<Result<(), String>> {
+        let (sender, receiver) = async_channel::bounded(1);
+        if self
+            .commands
+            .try_send(HistoryCommand::Clear(sender.clone()))
+            .is_err()
+        {
+            let _ = sender.try_send(Err(
+                "History worker is unavailable; history was not cleared".into(),
+            ));
+        }
+        receiver
     }
 }
 
@@ -216,6 +244,61 @@ impl Drop for HistoryService {
 mod tests {
     use super::*;
     use spotlight_core::desktop_entry::DesktopCatalog;
+
+    #[test]
+    fn disabled_learning_still_protects_legacy_history() {
+        use std::os::unix::fs::PermissionsExt;
+        let root = tempfile::tempdir().unwrap();
+        let parent = root.path().join("spotlight-linux");
+        let path = parent.join("history.sqlite3");
+        let mut store = UsageStore::open(&path).unwrap();
+        store.record_launch_at("legacy", 100).unwrap();
+        std::fs::set_permissions(&parent, std::fs::Permissions::from_mode(0o755)).unwrap();
+        for suffix in ["", "-wal", "-shm"] {
+            std::fs::set_permissions(
+                format!("{}{}", path.display(), suffix),
+                std::fs::Permissions::from_mode(0o644),
+            )
+            .unwrap();
+        }
+        let backend = Backend::initialize(path.clone(), false)
+            .recv_blocking()
+            .unwrap();
+        assert!(backend.warning().is_none());
+        assert_eq!(
+            std::fs::metadata(&parent).unwrap().permissions().mode() & 0o777,
+            0o700
+        );
+        for suffix in ["", "-wal", "-shm"] {
+            assert_eq!(
+                std::fs::metadata(format!("{}{}", path.display(), suffix))
+                    .unwrap()
+                    .permissions()
+                    .mode()
+                    & 0o777,
+                0o600
+            );
+        }
+        assert_eq!(store.stats("legacy").unwrap().unwrap().launch_count, 1);
+    }
+
+    #[test]
+    fn clear_reports_storage_failure_and_stopped_worker() {
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("invalid.sqlite3");
+        std::fs::write(&path, b"not a SQLite database").unwrap();
+        let provider = Arc::new(ApplicationProvider::new(
+            DesktopCatalog {
+                applications: vec![],
+                diagnostics: CatalogDiagnostics::default(),
+            },
+            Arc::new(RwLock::new(UsageSnapshot::default())),
+        ));
+        let service = HistoryService::start(None, path, provider, false);
+        assert!(service.clear().recv_blocking().unwrap().is_err());
+        service.commands.close();
+        assert!(service.clear().recv_blocking().unwrap().is_err());
+    }
 
     #[test]
     fn history_can_be_enabled_disabled_and_cleared_without_restart() {
@@ -245,7 +328,7 @@ mod tests {
         assert_eq!(snapshot.len(), 1);
         assert_eq!(snapshot.get("kept").launch_count, 1);
         let service = HistoryService::start(None, path.clone(), provider, false);
-        service.clear();
+        service.clear().recv_blocking().unwrap().unwrap();
         drop(service);
         assert!(
             UsageStore::open(&path)

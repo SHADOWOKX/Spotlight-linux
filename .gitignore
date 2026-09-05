@@ -5,3 +5,9 @@
 *.sqlite3-wal
 *.profraw
 
+
+/dist/
+.env
+.env.*
+*.log
+__pycache__/

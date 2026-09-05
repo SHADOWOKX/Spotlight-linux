@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=Spotlight Linux
+GenericName=Application Launcher
+Comment=Fast keyboard-first launcher and command palette
+Exec=spotlight-linux
+Icon=io.github.shadowokx.SpotlightLinux
+Terminal=false
+Categories=Utility;GNOME;GTK;
+Keywords=launcher;search;applications;keyboard;
+StartupNotify=true
+DBusActivatable=true
+X-SpotlightLinux-Managed=true

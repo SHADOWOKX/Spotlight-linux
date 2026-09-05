@@ -1,0 +1,7 @@
+{
+  "uuid": "spotlight@shadowokx",
+  "name": "Spotlight Desktop Integration",
+  "description": "Hide only the Spotlight search palette from window lists and bypass its window animations. Settings and other applications are unchanged.",
+  "shell-version": ["50"],
+  "version": 1
+}

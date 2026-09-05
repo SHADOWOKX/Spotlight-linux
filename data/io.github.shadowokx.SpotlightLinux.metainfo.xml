@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.shadowokx.SpotlightLinux</id>
+  <name>Spotlight Linux</name>
+  <summary>Fast keyboard-first launcher for Linux</summary>
+  <developer id="io.github.shadowokx">
+    <name>Spotlight Linux contributors</name>
+  </developer>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <url type="homepage">https://github.com/shadowokx/Spotlight-linux</url>
+  <url type="bugtracker">https://github.com/shadowokx/Spotlight-linux/issues</url>
+  <description>
+    <p>
+      Spotlight Linux is a native GTK launcher designed for immediate keyboard
+      access, local application search, and predictable resource use.
+    </p>
+  </description>
+  <launchable type="desktop-id">io.github.shadowokx.SpotlightLinux.desktop</launchable>
+  <provides>
+    <binary>spotlight-linux</binary>
+  </provides>
+  <content_rating type="oars-1.1" />
+  <releases>
+    <release version="0.1.0" date="2026-09-05">
+      <description><p>Initial Phase 1 development release.</p></description>
+    </release>
+  </releases>
+</component>

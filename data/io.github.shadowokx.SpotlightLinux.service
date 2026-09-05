@@ -1,0 +1,4 @@
+[D-BUS Service]
+Name=io.github.shadowokx.SpotlightLinux
+Exec=spotlight-linux --gapplication-service
+# X-SpotlightLinux-Managed=true

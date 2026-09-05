@@ -1,0 +1,112 @@
+/* Native palette: no backdrop filters, screenshot blur or entrance delays. */
+window.launcher-window { background: transparent; }
+.launcher-surface {
+  background-color: @window_bg_color;
+  color: @window_fg_color;
+  border: 1px solid alpha(@window_fg_color, 0.14);
+  border-radius: 18px;
+  box-shadow: inset 0 1px alpha(white, 0.06);
+}
+.launcher-window.radius-small .launcher-surface { border-radius: 12px; }
+.launcher-window.radius-medium .launcher-surface { border-radius: 18px; }
+.launcher-window.radius-large .launcher-surface { border-radius: 24px; }
+.launcher-window.style-glass .launcher-surface {
+  border-color: alpha(@window_fg_color, 0.20);
+  box-shadow: inset 0 1px alpha(white, 0.10);
+}
+.launcher-window.style-minimal .launcher-surface { box-shadow: none; }
+.search-area { min-height: 76px; padding: 0 20px; }
+.launcher-window.density-compact .search-area { min-height: 62px; padding: 0 16px; }
+.launcher-window .launcher-search,
+.launcher-window .launcher-search:focus,
+.launcher-window .launcher-search:focus-within {
+  min-height: 48px;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  outline: none;
+  font-size: 20px;
+  font-weight: 400;
+}
+.launcher-search image { color: alpha(@window_fg_color, 0.55); margin-right: 10px; }
+.launcher-search text { background: transparent; }
+.search-scope {
+  border: 1px solid alpha(@window_fg_color, 0.12);
+  border-radius: 6px;
+  padding: 3px 7px;
+  color: alpha(@window_fg_color, 0.55);
+  font-size: 11px;
+}
+.results-separator { min-height: 1px; background: alpha(@window_fg_color, 0.08); }
+.section-heading {
+  padding: 12px 22px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: alpha(@window_fg_color, 0.52);
+}
+.results-list { padding: 4px 10px 10px; background: transparent; }
+.result-row {
+  min-height: 52px;
+  margin: 2px 0;
+  padding: 0 12px;
+  border-radius: 9px;
+  background: transparent;
+  color: @window_fg_color;
+  transition: background-color 75ms ease-out;
+}
+.result-row:hover { background: alpha(@window_fg_color, 0.04); }
+.result-row:selected {
+  background: alpha(@window_fg_color, 0.09);
+  color: @window_fg_color;
+  box-shadow: inset 0 0 0 1px alpha(@window_fg_color, 0.045);
+}
+.result-row:selected:hover { background: alpha(@window_fg_color, 0.12); }
+.result-row:focus-visible { outline: 2px solid alpha(@window_fg_color, 0.45); outline-offset: -2px; }
+.result-icon { margin-right: 12px; }
+.result-title { font-weight: 500; font-size: 14px; }
+.result-subtitle { color: alpha(currentColor, 0.60); font-size: 11px; }
+.result-kind { color: alpha(currentColor, 0.48); font-size: 11px; margin-left: 12px; }
+.shortcut-hint {
+  margin-left: 14px;
+  min-width: 16px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  color: alpha(currentColor, 0.66);
+  background: alpha(currentColor, 0.06);
+  font-size: 11px;
+}
+.result-row .shortcut-hint { opacity: 0; }
+.result-row:selected .shortcut-hint { opacity: 1; }
+.empty-state { min-height: 156px; color: alpha(@window_fg_color, 0.58); }
+.palette-footer {
+  min-height: 42px;
+  padding: 0 12px;
+  border-top: 1px solid alpha(@window_fg_color, 0.08);
+  background: alpha(@window_fg_color, 0.015);
+  border-radius: 0 0 17px 17px;
+}
+.launcher-footer { color: alpha(@window_fg_color, 0.52); font-size: 11px; }
+.footer-button {
+  padding: 3px 8px;
+  min-height: 26px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 400;
+  color: alpha(@window_fg_color, 0.72);
+}
+.footer-button:hover { background: alpha(@window_fg_color, 0.07); }
+.footer-button .shortcut-hint { margin-left: 7px; }
+.action-popover contents { padding: 6px; border-radius: 12px; }
+.action-button { padding: 8px 10px; border-radius: 8px; }
+.appearance-preview {
+  border-radius: 14px;
+  padding: 14px;
+  background: @window_bg_color;
+  border: 1px solid alpha(@window_fg_color, 0.14);
+}
+.appearance-preview .preview-search { font-size: 17px; padding: 4px 8px 14px; }
+.preview-caption { font-size: 11px; color: alpha(@window_fg_color, 0.55); padding: 8px; }
+.launcher-window.motion-reduced * { transition-duration: 35ms; }
+.launcher-window.motion-off * { transition-duration: 0; animation-duration: 0; }

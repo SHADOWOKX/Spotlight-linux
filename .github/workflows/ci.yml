@@ -15,7 +15,7 @@ jobs:
         run: |
           apt-get update
           DEBIAN_FRONTEND=noninteractive apt-get install -y git ca-certificates build-essential cargo rustc rustfmt rust-clippy libgtk-4-dev libadwaita-1-dev pkg-config python3 dbus-x11 xvfb xauth gjs desktop-file-utils appstream
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
       - run: python3 scripts/check-requirements.py

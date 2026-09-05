@@ -59,6 +59,12 @@ cd Spotlight-linux
 ./scripts/install-user.sh
 ```
 
+if u want to use alt + space disable the default gnome gesture using that command 
+
+```
+gsettings set org.gnome.desktop.wm.keybindings activate-window-menu "[]"
+```
+
 After installation, open **Spotlight Linux** from GNOME Overview. The default shortcut is **Alt+Space** if available.
 
 ## Uninstall
